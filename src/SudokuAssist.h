@@ -1,0 +1,59 @@
+#ifndef __sudoku_sudokuassist_h__
+#define __sudoku_sudokuassist_h__
+
+#include <algorithm>
+#include <vector>
+
+#include "SudokuGridPoint.h"
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+/// \brief Declaration of SudokuAssist.
+/// \author anon.
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+namespace sudoku
+{
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+/// \brief Gets the possbile values that something can be on a Sudoku board.
+/// \param initialBoard The sudoku board populated with values.
+/// \param x The x ordinate of the point you want to find possible values.
+/// \param y The y ordinate of the point you want to find possible values.
+/// \param resultVector The vector of possible values (return).
+/// \return True if board is valid, false otherwise.
+////////////////////////////////////////////////////////////////////////////////////////////////////
+bool getPossibleValues( const short (&initialBoard)[9][9], const short x, const short y, 
+  std::vector<short> &resultVector );
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+/// \brief Populates a sudoku board using an initial board.
+/// \param initialBoard The initial sudoku board populated with values.
+/// \param sudokuBoard Populated with SudokuGridPoint elements (return).
+/// \return True if board is valid, false otherwise.
+////////////////////////////////////////////////////////////////////////////////////////////////////
+//bool populateSudokuBoard( const short (&initialBoard)[9][9], 
+//  SudokuGridPoint (&sudokuBoard)[9][9] );
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+/// \brief SudokuAssist contains methods for helping a user solve a Sudoku board.
+////////////////////////////////////////////////////////////////////////////////////////////////////
+class SudokuAssist
+{
+  public:
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    /// \brief SudokuAssist constructor.
+    ///
+    /// \param sudokuBoard, the initial sudoku board.
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    SudokuAssist(const short (&initialBoard)[9][9])
+    {
+
+    }
+
+  private:
+    SudokuGridPoint sudokuBoard_[9][9];
+};
+ 
+} // End of namespace sudoku.
+
+#endif

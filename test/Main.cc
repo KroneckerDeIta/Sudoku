@@ -8,6 +8,7 @@
 #include <cppunit/TestRunner.h>
 
 // Include all the tests.
+#include "SudokuAssistTest.h"
 #include "SudokuGridPointTest.h"
 
 int main(int argc, char* argv[])

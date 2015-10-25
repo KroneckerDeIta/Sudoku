@@ -24,13 +24,25 @@ class SudokuGridPointTest : public CppUnit::TestFixture
   CPPUNIT_TEST(testExceptionThrownIfYNegative);
   CPPUNIT_TEST(testExceptionThrownIfXTooLarge);
   CPPUNIT_TEST(testExceptionThrownIfYTooLarge);
-  CPPUNIT_TEST(testExceptionThrownIfValueNegative);
+  CPPUNIT_TEST(testExceptionThrownIfValueZero);
   CPPUNIT_TEST(testExceptionThrownIfValueTooLarge);
-  CPPUNIT_TEST(testExceptionThrownIfValueZeroAndInitialValueTrue);
   CPPUNIT_TEST(testGetX);
   CPPUNIT_TEST(testGetY);
   CPPUNIT_TEST(testGetValue);
-  CPPUNIT_TEST(testIsInitialValue);
+  CPPUNIT_TEST(testExceptionThrownIfValueInPossibleValuesZero);
+  CPPUNIT_TEST(testExceptionThrownIfValueInPossibleValuesTooLarge);
+  CPPUNIT_TEST(testExceptionThrownIfValueInPossibleValuesRepeated);
+  CPPUNIT_TEST(testExceptionThrownIfPossibleValuesEmpty);
+  CPPUNIT_TEST(testGetPossibleValues);
+  CPPUNIT_TEST(testRemoveValueFromPossibleValues);
+  CPPUNIT_TEST(testRemoveOneValueFromTwoFromPossibleValues);
+  CPPUNIT_TEST(testRemoveValueWhenInitialValueWasGiven);
+  CPPUNIT_TEST(testRestorePossibleValue);
+  CPPUNIT_TEST(testRestorePossibleValueThatIsAlreadyInPossibleValues);
+  CPPUNIT_TEST(testRestorePossibleValueWhenInitialValueWasGiven);
+  CPPUNIT_TEST(testRestorePossibleValueThatWasAddedToGuessedValues);
+  CPPUNIT_TEST(testExceptionThrownIfRestoringValueThatWasNotRemovedBefore);
+  CPPUNIT_TEST(testGetValueWhenOneValuePassedToConstructor);
   CPPUNIT_TEST_SUITE_END();
   
   //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -52,14 +64,11 @@ class SudokuGridPointTest : public CppUnit::TestFixture
     /// \test Test exception is thrown if y is too large.
     void testExceptionThrownIfYTooLarge();
     
-    /// \test Test exception is thrown if value is negative.
-    void testExceptionThrownIfValueNegative();
+    /// \test Test exception is thrown if value is zero.
+    void testExceptionThrownIfValueZero();
     
     /// \test Test exception is thrown if value is too large.
     void testExceptionThrownIfValueTooLarge();
-    
-    /// \test Test exception is thrown if value is zero and set to be an initial value.
-    void testExceptionThrownIfValueZeroAndInitialValueTrue();
 
     /// \test Test getting a valid ordinate x.
     void testGetX();
@@ -69,10 +78,50 @@ class SudokuGridPointTest : public CppUnit::TestFixture
 
     /// \test Test getting a valid value.
     void testGetValue();
+
+    /// \test Test exception thrown if value in possible values is zero.
+    void testExceptionThrownIfValueInPossibleValuesZero();
     
-    /// \test Test is initial value.
-    void testIsInitialValue();
+    /// \test Test exception thrown if value in possible values is too large.
+    void testExceptionThrownIfValueInPossibleValuesTooLarge();
   
+    /// \test Test exception thrown if values in possibleValues are repeated.
+    void testExceptionThrownIfValueInPossibleValuesRepeated();
+
+    /// \test Test exception thrown if values in possibleValues are repeated.
+    void testExceptionThrownIfPossibleValuesEmpty();
+ 
+    /// \test Test getting possible values.
+    void testGetPossibleValues();
+    
+    /// \test Test removing value from possible values.
+    void testRemoveValueFromPossibleValues();
+
+    /// \test Test removing an element for possible values, when only two values remain. 
+    void testRemoveOneValueFromTwoFromPossibleValues();
+
+    /// \test Test removing a value when an initial value was given.
+    void testRemoveValueWhenInitialValueWasGiven();
+
+    /// \test Test restoring a possible value that was removed previously.
+    void testRestorePossibleValue();
+
+    /// \test Test restoring a possible value that is already in the list of possbile values.
+    void testRestorePossibleValueThatIsAlreadyInPossibleValues();
+
+    /// \test Test restoring a possible value when an initial value was given.
+    void testRestorePossibleValueWhenInitialValueWasGiven();
+
+    /// \test Test that restoring a possible value that was added to guessed values restores 
+    /// possible values to its original state.
+    void testRestorePossibleValueThatWasAddedToGuessedValues();
+
+    /// \test Test that exception is thrown if restoring a value that was not previously removed.
+    void testExceptionThrownIfRestoringValueThatWasNotRemovedBefore();
+
+    /// \test Test that valid value is returned if one value passed to possible values.
+    void testGetValueWhenOneValuePassedToConstructor();
+
   //////////////////////////////////////////////////////////////////////////////////////////////////
   /// Private types and variables.
   //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -82,7 +131,6 @@ class SudokuGridPointTest : public CppUnit::TestFixture
       short x;
       short y;
       short value;
-      bool initialValue;
     };
     
     boost::shared_ptr<SudokuGridPoint> subject_; // subject used for testing.
@@ -93,6 +141,8 @@ class SudokuGridPointTest : public CppUnit::TestFixture
   //////////////////////////////////////////////////////////////////////////////////////////////////
   private:
     boost::shared_ptr<SudokuGridPoint> createSubject(); // Method used to create subject.
+    // Method used to create subject with possible values.
+    boost::shared_ptr<SudokuGridPoint> createSubject(const std::vector<short>& possibleValues);
 };
 
 } // End of namespace sudoku.
