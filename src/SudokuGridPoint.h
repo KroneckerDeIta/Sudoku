@@ -7,6 +7,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include <algorithm>
+#include <iostream>
 #include <stdexcept>
 
 namespace sudoku
@@ -64,13 +65,11 @@ class SudokuGridPoint
     /// \param y The y coordinate on the board (0 to 8).
     /// \param possibleValues The possible values the value at this coordinate could be.
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    SudokuGridPoint(short x, short y, std::vector<short> possibleValues)
-    {
-      
+    SudokuGridPoint(short x, short y, std::vector<short> possibleValues) : SudokuGridPoint(x, y, 1)
+    { 
       // initialValue_ to be 1 for the time being, change afterwards.
-      SudokuGridPoint(x, y, 1);
-      checkVectorOfPossibleValues(possibleValues);
-      
+      checkVectorOfPossibleValues(possibleValues);     
+ 
       if ( possibleValues.size() == 1 )
       {
         guessValue_ = possibleValues.at(0);
@@ -131,49 +130,77 @@ class SudokuGridPoint
     }
     
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    /// \brief remove a possible values.
-    /// \return true if value was remove, false otherwise.
+    /// \brief Remove a value from the possible values.  It is not guaranteed that the value will be
+    /// removed from the possible values.  It will only be removed if it exists in the same column,
+    /// row or sudoku 'box' that the given x and y exist in.
+    /// \param x The x ordinate of the value.
+    /// \param y The y ordinate of the value.
+    /// \param value The value to be removed from possible values.
+    /// \return true if value was removed, false otherwise.
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    bool removePossibleValue(short value)
+    bool removePossibleValue(const short x, const short y, const short value)
     {
       bool result(false);
-      std::vector<short>::iterator itPos(std::remove(possibleValues_.begin(), possibleValues_.end(),
-        value));
-      
-      if ( itPos != possibleValues_.end() )
-      {
-        possibleValues_.erase(itPos, possibleValues_.end());
-        removedPossibleValues_.push_back(value);
-        result = true;
-      }
+ 
+      // Checks if in the same column or row.  Then checks if they are in the same sudoku box.
+      // x - (x % 3) is a way of getting to the nearest multiple of 3 less than or equal to x.
+      if ( x_ == x || y_ == y ||
+        ( ( x_ - (x_ % 3) ) == ( x - ( x % 3 ) ) && ( y_ - (y_ % 3) ) == ( y - ( y % 3 ) ) ) )
+      {      
+        // Now check if the value is actually in the possibleValues.
+        std::vector<short>::iterator itPos(std::remove(possibleValues_.begin(),
+          possibleValues_.end(), value));
+        
+        if ( itPos != possibleValues_.end() )
+        {
+          possibleValues_.erase(itPos, possibleValues_.end());
+          
+          // Now add to the removed values.
+          removedValues_.push_back(RemovedValueInfo_());
+          removedValues_.back().removedX = x;
+          removedValues_.back().removedY = y;
+          removedValues_.back().removedValue = value;
 
-      if ( possibleValues_.size() == 1 )
-      {
-        // If we have one value left in the possible values this must be our guess.
-        guessValue_ = possibleValues_.back();
-        possibleValues_.pop_back();
+          result = true;
+        }
+  
+        if ( possibleValues_.size() == 1 )
+        {
+          // If we have one value left in the possible values this must be our guess.
+          guessValue_ = possibleValues_.back();
+          possibleValues_.pop_back();
+        }
       }
 
       return result;
     }
     
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    /// \brief restores a possible values.
+    /// \brief restores a possible values.  Restoration will only take place if the passed ordinates
+    /// and value correspond to something that was removed previously.
+    /// \param x The x ordinate of the value.
+    /// \param y The y ordinate of the value.
+    /// \param value The value to be removed from possible values.
     /// \return true if value was restored, false otherwise.
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    bool restorePossibleValue(short value)
+    bool restorePossibleValue(const short x, const short y, const short value)
     {
       bool result(false);
 
       // If we gave an initial value then we cannot restore a value to the possible values.
       if( initialValue_ == 0 )
       {
+        RemovedValueInfo_ valueInfo = RemovedValueInfo_();
+        valueInfo.removedX = x;
+        valueInfo.removedY = y;
+        valueInfo.removedValue = value;
+
         // Find if we removed the value previously.
-        std::vector<short>::iterator itPos(std::remove(removedPossibleValues_.begin(),
-          removedPossibleValues_.end(), value));
+        std::vector<RemovedValueInfo_>::iterator itPos(std::remove(removedValues_.begin(),
+          removedValues_.end(), valueInfo));
 
         // If we have then we can restore it.
-        if ( itPos != removedPossibleValues_.end() )
+        if ( itPos != removedValues_.end() )
         {
           // We cannot have removed a value that was assigned to guessValue_ (hopefully), so add it
           // back if it is none zero.
@@ -186,16 +213,156 @@ class SudokuGridPoint
           possibleValues_.push_back(value);
 
           // Since it was in the vector of removed values we have better remove it.
-          removedPossibleValues_.erase(itPos, removedPossibleValues_.end());
+          removedValues_.erase(itPos, removedValues_.end());
           
           result = true;
         }
-        else
+      }
+      return result;
+    }
+    
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    /// \brief Equality operator.
+    /// \param rhs The right hand side object.
+    /// \return true if number of possible values are equal, but if initial values were provided
+    /// then trivially equal, false otherwise.
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    bool operator==(const SudokuGridPoint& rhs) const
+    {
+      bool result(false);
+      if ( ( initialValue_ == 0 && rhs.initialValue_ == 0 ) ||
+           ( initialValue_ != 0 && rhs.initialValue_ != 0 ) )
+      { 
+        if ( possibleValues_.size() == rhs.possibleValues_.size() )
         {
-          throw std::invalid_argument("Cannot restore value that was not removed previously.");
+          result = true;
         }
       }
       return result;
+    }
+    
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    /// \brief Less than operator.
+    /// \param rhs The right hand side object.
+    /// \return true if number of possible values of this object is less than that of the rhs, note
+    /// that objects initialised with initial values are less than objects that have possible
+    /// values, false otherwise.
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    bool operator<(const SudokuGridPoint& rhs) const
+    {
+      bool result(false);
+      if ( initialValue_ != 0)
+      {
+        if ( rhs.initialValue_ == 0 )
+        {
+          result = true;
+        }
+      }
+      else
+      {
+        if ( possibleValues_.size() < rhs.possibleValues_.size() )
+        {
+          result = true;
+        }
+      }
+      return result;
+    }
+    
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    /// \brief Not equal to operator.
+    /// \param rhs The right hand side object.
+    /// \return true if number of possible values of this object is not equal to that of the rhs,
+    /// note that objects initialised with initial values are not equal to objects initialised
+    /// with possible values, false otherwise.
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    bool operator!=(const SudokuGridPoint& rhs) const
+    {
+      return ! ( *this == rhs );
+    }
+    
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    /// \brief Less than or equal to operator.
+    /// \param rhs The right hand side object.
+    /// \return true if number of possible values of this object is less than or equal to that of
+    /// the rhs, note that objects initialised with initial values are less than or equal to objects
+    /// initialised with possible values, false otherwise.
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    bool operator<=(const SudokuGridPoint& rhs) const
+    {
+      return ( *this == rhs ) || ( *this < rhs );
+    }
+    
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    /// \brief Greater than operator.
+    /// \param rhs The right hand side object.
+    /// \return true if number of possible values of this object is greater than that of
+    /// the rhs, note that objects initialised with initial values not greater than objects
+    /// initialised with possible values, false otherwise.
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    bool operator>(const SudokuGridPoint& rhs) const
+    {
+      return ! ( *this <= rhs );
+    }
+    
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    /// \brief Greater than or equal to operator.
+    /// \param rhs The right hand side object.
+    /// \return true if number of possible values of this object is greater than or equal to that of
+    /// the rhs, note that objects initialised with initial values are not greater than or equal to
+    /// objects initialised with possible values, false otherwise.
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    bool operator>=(const SudokuGridPoint& rhs) const
+    {
+      return ! ( *this < rhs );
+    }
+    
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    /// \brief Gets the affected grid points.  This will need explaining.
+    /// We have a grid point, given by x, y on the sudoku board.  If this grid point has a value
+    /// then none of the values in the same row, column or 'box' can have the same value. With this
+    /// method we return a vector of pairs of these other grid points.
+    /// \return See decription.
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    std::vector<std::pair<short, short> > getAffectedGridPoints()
+    {
+      std::vector<std::pair<short, short> > affectedGridPoints;
+      
+      // Get affected grid points from row.
+      for ( short i = 0; i < 9; ++i )
+      {
+        // Don't add this grid point.
+        if ( i != x_ )
+        {
+          affectedGridPoints.push_back(std::make_pair(i, y_));
+        }
+      }
+
+      // Get affected grid points from column.
+      for ( short j(0); j < 9; ++j )
+      {
+        // Don't add this grid point.
+        if ( j != y_ )
+        {
+          affectedGridPoints.push_back(std::make_pair(x_, j));
+        }
+      }
+      
+      short startX(x_ - (x_ % 3));
+      short startY(y_ - (y_ % 3));
+
+      // Get affected grid points from sudoku box.
+      for ( short i(startX); i < startX + 3; ++i )
+      {
+        for ( short j(startY); j < startY + 3; ++j )
+        {
+          if ( i != x_ && j != y_ )
+          {
+            affectedGridPoints.push_back(std::make_pair(i, j));
+          }
+        }
+      }
+
+      return affectedGridPoints;
     }
 
   // Private methods.
@@ -262,12 +429,28 @@ class SudokuGridPoint
 
   // Private variables.
   private:
+    // Struct that contains information about a removed value from possible values.
+    struct RemovedValueInfo_
+    {
+      short removedValue;
+      short removedX;
+      short removedY;
+
+      // Need equals operator for restoring to possible values.
+      bool operator==(const RemovedValueInfo_& rhs) const
+      {
+        return ( removedValue == rhs.removedValue ) &&
+               ( removedX == rhs.removedX ) &&
+               ( removedY == rhs.removedY );
+      }
+    };
+
     short x_; // The x ordinate.
     short y_; // The y ordinate.
     short initialValue_; // The value at the coordinates on the Sudoku board.
     short guessValue_; // The value we have guessed once we have one value in possible values.
     std::vector<short> possibleValues_; // Vector of possible values.
-    std::vector<short> removedPossibleValues_; // Vector of removed possible values.
+    std::vector<RemovedValueInfo_> removedValues_; // Vector of removed possible values.
 };
  
 } // End of namespace sudoku.

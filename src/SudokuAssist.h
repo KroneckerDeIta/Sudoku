@@ -1,15 +1,15 @@
 #ifndef __sudoku_sudokuassist_h__
 #define __sudoku_sudokuassist_h__
 
-#include <algorithm>
-#include <vector>
-
-#include "SudokuGridPoint.h"
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 /// \brief Declaration of SudokuAssist.
 /// \author anon.
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#include <algorithm>
+#include <vector>
+
+#include "SudokuGridPoint.h"
 
 namespace sudoku
 {

@@ -1,3 +1,8 @@
+////////////////////////////////////////////////////////////////////////////////////////////////////
+/// \brief Implementation of tests for SudokuGridPoint.
+/// \author anon
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
 #include <boost/shared_ptr.hpp>
 
 #include "SudokuGridPoint.h"
@@ -20,6 +25,17 @@ const short tooLargeValue(10);
 
 namespace sudoku
 {
+
+template<typename T>
+bool checkIfVectorsEqual( std::vector<T> lhs, std::vector<T> rhs )
+{
+  // Sort the vectors ready for checking equality.
+  std::sort(lhs.begin(),lhs.end());
+  std::sort(rhs.begin(),rhs.end());
+
+  // Now check for equaltiy.
+  return std::equal(lhs.begin(), lhs.end(), rhs.begin());
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void SudokuGridPointTest::testExceptionThrownIfXNegative()
@@ -231,15 +247,18 @@ void SudokuGridPointTest::testGetPossibleValues()
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void SudokuGridPointTest::testRemoveValueFromPossibleValues()
+void SudokuGridPointTest::testRemoveValueFromPossibleValuesForSameXY()
 {
   std::vector<short> possibleValues = {1, 2, 3};
   std::vector<short> possibleValuesRemoved = {1, 3};
-  
+  const short testX = 1;
+  const short testY = 2;
+  const short testValue = 2;  
+
   boost::shared_ptr<SudokuGridPoint> s = createSubject(possibleValues);
   
   // First check method returns that value could be removed.
-  CPPUNIT_ASSERT( s->removePossibleValue(2) );
+  CPPUNIT_ASSERT( s->removePossibleValue(testX, testY, testValue) );
 
   // Now check values.
   CPPUNIT_ASSERT( std::equal(possibleValuesRemoved.begin(), possibleValuesRemoved.end(),
@@ -247,17 +266,38 @@ void SudokuGridPointTest::testRemoveValueFromPossibleValues()
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+void SudokuGridPointTest::testRemoveValueFromPossibleValuesFailedDueToXYNotInRowColOrBox()
+{
+  std::vector<short> possibleValues = {1, 2, 3};
+  const short testX = 2;
+  const short testY = 3;
+  const short testValue = 2;  
+
+  boost::shared_ptr<SudokuGridPoint> s = createSubject(possibleValues);
+  
+  // First check method returns that value could be removed.
+  CPPUNIT_ASSERT( ! s->removePossibleValue(testX, testY, testValue) );
+  
+  // Now check values to make sure nothing was removed.
+  CPPUNIT_ASSERT( std::equal(possibleValues.begin(), possibleValues.end(),
+    s->getPossibleValues().begin() ) );
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
 void SudokuGridPointTest::testRemoveOneValueFromTwoFromPossibleValues()
 {
   std::vector<short> possibleValues = {1, 2};
-  
+  const short testX = 0;
+  const short testY = 0;
+  const short testValue = 2;  
+
   boost::shared_ptr<SudokuGridPoint> s = createSubject(possibleValues);
 
   // Test that value returned is zero.  It has not been guessed yet.  
   CPPUNIT_ASSERT_EQUAL( static_cast<short>(0), s->getValue() );
 
   // First check method returns that value could be removed.
-  CPPUNIT_ASSERT( s->removePossibleValue(2) );
+  CPPUNIT_ASSERT( s->removePossibleValue(testX, testY, testValue) );
 
   // Now check returned vector of possible values is empty.
   CPPUNIT_ASSERT( s->getPossibleValues().empty() );
@@ -269,120 +309,132 @@ void SudokuGridPointTest::testRemoveOneValueFromTwoFromPossibleValues()
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void SudokuGridPointTest::testRemoveValueWhenInitialValueWasGiven()
 {
+  // Give some values inside the same box.
+  const short testX = 0;
+  const short testY = 0;
+  const short testValue = 2;
+
   // Check that method returns that no value was removed.
-  CPPUNIT_ASSERT( ! subject_->removePossibleValue(2) );
+  CPPUNIT_ASSERT( ! subject_->removePossibleValue(testX, testY, testValue) );
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void SudokuGridPointTest::testRestorePossibleValue()
 {
   std::vector<short> possibleValues = {1, 2, 3};
-  
+  const short testX = 2;
+  const short testY = 1;
+  const short testValue = 2;
+
   boost::shared_ptr<SudokuGridPoint> s = createSubject(possibleValues);
   
   // Remove value.
-  s->removePossibleValue(2);
+  s->removePossibleValue(testX, testY, testValue);
   
   // Restore the value that was just removed.
-  CPPUNIT_ASSERT( s->restorePossibleValue(2) );
+  CPPUNIT_ASSERT( s->restorePossibleValue(testX, testY, testValue) );
 
   std::vector<short> returnValues(s->getPossibleValues());
 
-  // sort the returned values, comparison will fail otherwise.
-  std::sort( returnValues.begin(), returnValues.end() );
+  CPPUNIT_ASSERT( checkIfVectorsEqual<short>(possibleValues, returnValues) );
+}
 
-  // Now check values.
-  CPPUNIT_ASSERT( std::equal(possibleValues.begin(), possibleValues.end(),
-    returnValues.begin() ) );
+////////////////////////////////////////////////////////////////////////////////////////////////////
+void SudokuGridPointTest::testRestorePossibleValueFailsIfXDifferentFromOneRecorded()
+{
+  std::vector<short> possibleValues = {1, 2, 3};
+  std::vector<short> removedPossibleValues = {1, 3};
+  const short testX = 2;
+  const short otherX = 3;
+  const short testY = 1;
+  const short testValue = 2;
+
+  boost::shared_ptr<SudokuGridPoint> s = createSubject(possibleValues);
+  
+  // Remove value.
+  s->removePossibleValue(testX, testY, testValue);
+  
+  // Test that restoring not possible as input x is different.
+  CPPUNIT_ASSERT( ! s->restorePossibleValue(otherX, testY, testValue) );
+
+  std::vector<short> returnValues(s->getPossibleValues());
+
+  CPPUNIT_ASSERT( checkIfVectorsEqual<short>(removedPossibleValues, returnValues) );
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+void SudokuGridPointTest::testRestorePossibleValueFailsIfYDifferentFromOneRecorded()
+{
+  std::vector<short> possibleValues = {1, 2, 3};
+  std::vector<short> removedPossibleValues = {1, 3};
+  const short testX = 2;
+  const short testY = 1;
+  const short otherY = 2;
+  const short testValue = 2;
+
+  boost::shared_ptr<SudokuGridPoint> s = createSubject(possibleValues);
+  
+  // Remove value.
+  s->removePossibleValue(testX, testY, testValue);
+  
+  // Test that restoring not possible as input x is different.
+  CPPUNIT_ASSERT( ! s->restorePossibleValue(testX, otherY, testValue) );
+
+  std::vector<short> returnValues(s->getPossibleValues());
+
+  CPPUNIT_ASSERT( checkIfVectorsEqual<short>(removedPossibleValues, returnValues) );
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void SudokuGridPointTest::testRestorePossibleValueThatIsAlreadyInPossibleValues()
 {
   std::vector<short> possibleValues = {1, 2, 3};
+  const short testX = 2;
+  const short testY = 1;
+  const short testValue = 1;
   
   boost::shared_ptr<SudokuGridPoint> s = createSubject(possibleValues);
   
-  // Try and restore a value that is still in the possible values.
-  try
-  {
-    // Restore a value that was not removed before.
-    s->restorePossibleValue(1);
-
-    // Should not reach here!
-    CPPUNIT_ASSERT(false);
-  }
-  catch ( std::invalid_argument &e )
-  {
-    CPPUNIT_ASSERT( e.what() ==
-      std::string("Cannot restore value that was not removed previously.") );
-  }
+  // Check restoring a value that was not removed before returns false.
+  CPPUNIT_ASSERT( ! s->restorePossibleValue(testX, testY, testValue) );
 
   std::vector<short> returnValues(s->getPossibleValues());
 
-  // sort the returned values, comparison will fail otherwise.
-  std::sort( returnValues.begin(), returnValues.end() );
-
-  // Now check values.
-  CPPUNIT_ASSERT( std::equal(possibleValues.begin(), possibleValues.end(),
-    returnValues.begin() ) );
+  CPPUNIT_ASSERT( checkIfVectorsEqual<short>(possibleValues, returnValues) );
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void SudokuGridPointTest::testRestorePossibleValueWhenInitialValueWasGiven()
 {
-  CPPUNIT_ASSERT( ! subject_->restorePossibleValue(2) );
+  const short testX = 2;
+  const short testY = 1;
+  const short testValue = 1;
+
+  CPPUNIT_ASSERT( ! subject_->restorePossibleValue(testX, testY, testValue) );
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void SudokuGridPointTest::testRestorePossibleValueThatWasAddedToGuessedValues()
 {
   std::vector<short> possibleValues = {1, 2};
-  
+  const short testX = 2;
+  const short testY = 1;
+  const short testValue = 1;
+ 
   boost::shared_ptr<SudokuGridPoint> s = createSubject(possibleValues);
   
   // Remove a value that is still in the possible values.
-  s->removePossibleValue(2);
+  s->removePossibleValue(testX, testY, 2);
 
   // Restore the same value.
-  s->restorePossibleValue(2);
+  s->restorePossibleValue(testX, testY, 2);
 
   // Should return 0 as the value, if 2 has been restored.
   CPPUNIT_ASSERT_EQUAL( static_cast<short>(0), s->getValue() );
 
   std::vector<short> returnValues(s->getPossibleValues());
 
-  // sort the returned values, comparison will fail otherwise.
-  std::sort( returnValues.begin(), returnValues.end() );
-
-  // Now check values.
-  CPPUNIT_ASSERT( std::equal(possibleValues.begin(), possibleValues.end(),
-    returnValues.begin() ) );
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-void SudokuGridPointTest::testExceptionThrownIfRestoringValueThatWasNotRemovedBefore()
-{
-  std::vector<short> possibleValues = {1, 2};
-  
-  boost::shared_ptr<SudokuGridPoint> s = createSubject(possibleValues);
-  
-  // Remove a value that is still in the possible values.
-  s->removePossibleValue(2);
-
-  try
-  {
-    // Restore a value that was not removed before.
-    s->restorePossibleValue(1);
-
-    // Should not reach here!
-    CPPUNIT_ASSERT(false);
-  }
-  catch ( std::invalid_argument &e )
-  {
-    CPPUNIT_ASSERT( e.what() ==
-      std::string("Cannot restore value that was not removed previously.") );
-  }
+  CPPUNIT_ASSERT( checkIfVectorsEqual<short>(possibleValues, returnValues) );
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -397,6 +449,171 @@ void SudokuGridPointTest::testGetValueWhenOneValuePassedToConstructor()
 
   // Check possible values vector is empty.
   CPPUNIT_ASSERT( s->getPossibleValues().empty() );
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+void SudokuGridPointTest::testEqualityOfTwoSudokuGridPointObjects()
+{
+  boost::shared_ptr<SudokuGridPoint> sInitial(createSubject());
+
+  std::vector<short> possibleValuesOne1 = {1};
+  boost::shared_ptr<SudokuGridPoint> sOnePossible1(createSubject(possibleValuesOne1));
+  
+  std::vector<short> possibleValuesOne2 = {2};
+  boost::shared_ptr<SudokuGridPoint> sOnePossible2(createSubject(possibleValuesOne2));
+  
+  std::vector<short> possibleValuesTwo = {1, 2};
+  boost::shared_ptr<SudokuGridPoint> sTwoPossibles(createSubject(possibleValuesTwo));
+
+  CPPUNIT_ASSERT( *sInitial == *subject_ );
+  CPPUNIT_ASSERT( ! (*sOnePossible1 == *subject_) );
+  CPPUNIT_ASSERT( *sOnePossible1 == *sOnePossible2 );
+  CPPUNIT_ASSERT( ! (*sOnePossible1 == *sTwoPossibles) );
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+void SudokuGridPointTest::testLessThanOfSudokuGridPointObjects()
+{
+  boost::shared_ptr<SudokuGridPoint> sInitial(createSubject());
+
+  std::vector<short> possibleValuesOne1 = {1};
+  boost::shared_ptr<SudokuGridPoint> sOnePossible1(createSubject(possibleValuesOne1));
+  
+  std::vector<short> possibleValuesOne2 = {2};
+  boost::shared_ptr<SudokuGridPoint> sOnePossible2(createSubject(possibleValuesOne2));
+  
+  std::vector<short> possibleValuesTwo = {1, 2};
+  boost::shared_ptr<SudokuGridPoint> sTwoPossibles(createSubject(possibleValuesTwo));
+
+  CPPUNIT_ASSERT( ! (*sInitial < *subject_) );
+  CPPUNIT_ASSERT( *subject_ < *sOnePossible1 );
+  CPPUNIT_ASSERT( ! (*sOnePossible1 < *subject_) );
+  CPPUNIT_ASSERT( ! (*sOnePossible1 < *sOnePossible2) );
+  CPPUNIT_ASSERT( *sOnePossible1 < *sTwoPossibles );
+  CPPUNIT_ASSERT( ! (*sTwoPossibles < *sOnePossible1) );
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+void SudokuGridPointTest::testNotEqualOperatorSudokuGridPointObjects()
+{
+  boost::shared_ptr<SudokuGridPoint> sInitial(createSubject());
+
+  std::vector<short> possibleValuesOne1 = {1};
+  boost::shared_ptr<SudokuGridPoint> sOnePossible1(createSubject(possibleValuesOne1));
+  
+  std::vector<short> possibleValuesOne2 = {2};
+  boost::shared_ptr<SudokuGridPoint> sOnePossible2(createSubject(possibleValuesOne2));
+  
+  std::vector<short> possibleValuesTwo = {1, 2};
+  boost::shared_ptr<SudokuGridPoint> sTwoPossibles(createSubject(possibleValuesTwo));
+
+  CPPUNIT_ASSERT( ! (*sInitial != *subject_) );
+  CPPUNIT_ASSERT( *subject_ != *sOnePossible1 );
+  CPPUNIT_ASSERT( ! (*sOnePossible1 != *sOnePossible2) );
+  CPPUNIT_ASSERT( *sOnePossible1 != *sTwoPossibles );
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+void SudokuGridPointTest::testLessThanOrEqualToOperatorSudokuGridPointObjects()
+{
+  boost::shared_ptr<SudokuGridPoint> sInitial(createSubject());
+
+  std::vector<short> possibleValuesOne1 = {1};
+  boost::shared_ptr<SudokuGridPoint> sOnePossible1(createSubject(possibleValuesOne1));
+  
+  std::vector<short> possibleValuesOne2 = {2};
+  boost::shared_ptr<SudokuGridPoint> sOnePossible2(createSubject(possibleValuesOne2));
+  
+  std::vector<short> possibleValuesTwo = {1, 2};
+  boost::shared_ptr<SudokuGridPoint> sTwoPossibles(createSubject(possibleValuesTwo));
+
+  CPPUNIT_ASSERT( *sInitial <= *subject_ );
+  CPPUNIT_ASSERT( *subject_ <= *sOnePossible1 );
+  CPPUNIT_ASSERT( ! (*sOnePossible1 <= *subject_) );
+  CPPUNIT_ASSERT( *sOnePossible1 <= *sOnePossible2 );
+  CPPUNIT_ASSERT( *sOnePossible1 <= *sTwoPossibles );
+  CPPUNIT_ASSERT( ! (*sTwoPossibles <= *sOnePossible1) );
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+void SudokuGridPointTest::testGreaterThanOperatorSudokuGridPointObjects()
+{
+  boost::shared_ptr<SudokuGridPoint> sInitial(createSubject());
+
+  std::vector<short> possibleValuesOne1 = {1};
+  boost::shared_ptr<SudokuGridPoint> sOnePossible1(createSubject(possibleValuesOne1));
+  
+  std::vector<short> possibleValuesOne2 = {2};
+  boost::shared_ptr<SudokuGridPoint> sOnePossible2(createSubject(possibleValuesOne2));
+  
+  std::vector<short> possibleValuesTwo = {1, 2};
+  boost::shared_ptr<SudokuGridPoint> sTwoPossibles(createSubject(possibleValuesTwo));
+
+  CPPUNIT_ASSERT( ! (*sInitial > *subject_) );
+  CPPUNIT_ASSERT( ! (*subject_ > *sOnePossible1) );
+  CPPUNIT_ASSERT( *sOnePossible1 > *subject_ );
+  CPPUNIT_ASSERT( ! (*sOnePossible1 > *sOnePossible2) );
+  CPPUNIT_ASSERT( ! (*sOnePossible1 > *sTwoPossibles) );
+  CPPUNIT_ASSERT( *sTwoPossibles > *sOnePossible1 );
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+void SudokuGridPointTest::testGreaterThanOrEqualToOperatorSudokuGridPointObjects()
+{
+  boost::shared_ptr<SudokuGridPoint> sInitial(createSubject());
+
+  std::vector<short> possibleValuesOne1 = {1};
+  boost::shared_ptr<SudokuGridPoint> sOnePossible1(createSubject(possibleValuesOne1));
+  
+  std::vector<short> possibleValuesOne2 = {2};
+  boost::shared_ptr<SudokuGridPoint> sOnePossible2(createSubject(possibleValuesOne2));
+  
+  std::vector<short> possibleValuesTwo = {1, 2};
+  boost::shared_ptr<SudokuGridPoint> sTwoPossibles(createSubject(possibleValuesTwo));
+
+  CPPUNIT_ASSERT( *sInitial >= *subject_ );
+  CPPUNIT_ASSERT( ! (*subject_ >= *sOnePossible1) );
+  CPPUNIT_ASSERT( *sOnePossible1 >= *subject_ );
+  CPPUNIT_ASSERT( *sOnePossible1 >= *sOnePossible2 );
+  CPPUNIT_ASSERT( ! (*sOnePossible1 >= *sTwoPossibles) );
+  CPPUNIT_ASSERT( *sTwoPossibles >= *sOnePossible1 );
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+void SudokuGridPointTest::testGetAffectedGridPoints()
+{
+  std::vector<std::pair<short, short> > myVecX1Y2 = { {1, 0}, {1, 1}, {1, 3}, {1, 4}, {1, 5},
+                                                      {1, 6}, {1, 7}, {1, 8}, {0, 2}, {2, 2},
+                                                      {3, 2}, {4, 2}, {5, 2}, {6, 2}, {7, 2},
+                                                      {8, 2}, {0, 0}, {0, 1}, {2, 0}, {2, 1} };
+  testFields_.x = 1;
+  testFields_.y = 2;
+  boost::shared_ptr<SudokuGridPoint> subjectX1Y2(createSubject());
+ 
+  std::vector<std::pair<short, short> > myVecX4Y4 = { {4, 0}, {4, 1}, {4, 2}, {4, 3}, {4, 5},
+                                                      {4, 6}, {4, 7}, {4, 8}, {0, 4}, {1, 4},
+                                                      {2, 4}, {3, 4}, {5, 4}, {6, 4}, {7, 4},
+                                                      {8, 4}, {3, 3}, {3, 5}, {5, 3}, {5, 5} };
+  testFields_.x = 4;
+  testFields_.y = 4;
+  boost::shared_ptr<SudokuGridPoint> subjectX4Y4(createSubject());
+
+  std::vector<std::pair<short, short> > myVecX6Y5 = { {6, 0}, {6, 1}, {6, 2}, {6, 3}, {6, 4},
+                                                      {6, 6}, {6, 7}, {6, 8}, {0, 5}, {1, 5},
+                                                      {2, 5}, {3, 5}, {4, 5}, {5, 5}, {7, 5},
+                                                      {8, 5}, {7, 3}, {7, 4}, {8, 3}, {8, 4} };
+  testFields_.x = 6;
+  testFields_.y = 5;
+  boost::shared_ptr<SudokuGridPoint> subjectX6Y5(createSubject());
+
+  CPPUNIT_ASSERT( (checkIfVectorsEqual<std::pair<short, short> >(
+    subjectX1Y2->getAffectedGridPoints(), myVecX1Y2 )));
+  
+  CPPUNIT_ASSERT( (checkIfVectorsEqual<std::pair<short, short> >(
+    subjectX4Y4->getAffectedGridPoints(), myVecX4Y4 )));
+  
+  CPPUNIT_ASSERT( (checkIfVectorsEqual<std::pair<short, short> >(
+    subjectX6Y5->getAffectedGridPoints(), myVecX6Y5 )));
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

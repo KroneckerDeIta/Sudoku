@@ -1,3 +1,8 @@
+////////////////////////////////////////////////////////////////////////////////////////////////////
+/// \brief Implementation of tests for SudokuAssist.
+/// \author anon
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
 #include <algorithm>
 #include <vector>
 
@@ -27,11 +32,21 @@ const short testBoard[9][9] =
 namespace sudoku
 {
 
+template<typename T>
+bool checkIfVectorsEqual( std::vector<T> lhs, std::vector<T> rhs )
+{
+  // Sort the vectors ready for checking equality.
+  std::sort(lhs.begin(),lhs.end());
+  std::sort(rhs.begin(),rhs.end());
+
+  // Now check for equaltiy.
+  return std::equal(lhs.begin(), lhs.end(), rhs.begin());
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void SudokuAssistTest::testGetPossibleValues()
 {
-  bool result(false);
-  std::vector<short> resultVector();
+  std::vector<short> resultVector;
   
   std::vector<short> vec00 = { 1, 4, 5, 6, 7 }; // Top left.
   std::vector<short> vec13 = { 2, 6, 9 }; // Top centre.
@@ -43,11 +58,10 @@ void SudokuAssistTest::testGetPossibleValues()
   std::vector<short> vec75 = { 2 }; // Bottom centre.
   std::vector<short> vec88 = { 1, 6, 7, 8 }; // Bottom right.
   
-  //result = getPossibleValues(testBoard, 0, 0, resultVector);
+  CPPUNIT_ASSERT( getPossibleValues(testBoard, static_cast<short>(0), static_cast<short>(0),
+    resultVector) );
 
-  //CPPUNIT_ASSERT(result);
-  //CPPUNIT_ASSERT( resultVector.size() == vec00.size() );
-  //CPPUNIT_ASSERT(std::equal( vec00.begin(), vec00.end(), resultVector.begin() ));
+  //CPPUNIT_ASSERT( checkIfVectorsEqual<short>(vec00, resultVector) );
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

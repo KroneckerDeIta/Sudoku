@@ -1,20 +1,22 @@
-PROGS = SudokuGridPointTest SudokuAssistTest Main
-PROGS_SRC = SudokuAssist
+SOURCES = SudokuGridPointTest.cc SudokuAssistTest.cc Main.cc
+OBJECTS = $(SOURCES:.cc=.o)
+SRC_OBJECTS = SudokuAssist.o
+EXECUTABLE = Main
 SRC = ../src
+CCFLAGS = -c -Wall
 CPPUNIT_LIBS = -lcppunit -ldl
-PROGS_IN = $(PROGS:=.cc)
-PROGS_OUT = $(PROGS:=.o)
 
-PROGS_SRC_IN = $(addprefix $(SRC)/,$(PROGS_SRC:=.cc))
+all: $(SOURCES) $(EXECUTABLE)
+	cd ../src && make
 
-all: pre-build
-	g++ -std=c++11 $(PROGS_OUT) $(CPPUNIT_LIBS) -o Main
+$(EXECUTABLE): $(OBJECTS)
+	g++ -std=c++11 -I $(SRC) $(OBJECTS) $(SRC_OBJECTS) $(CPPUNIT_LIBS) -o $@
 
-pre-build:
-	g++ -std=c++11 -I $(SRC) -c $(PROGS_IN) $(PROGS_SRC_IN)
+.cc.o:
+	g++ -std=c++11 -I $(SRC) $(CCFLAGS) $< -o $@
 
 clean:
-	rm -rf $(PROGS_OUT)
+	rm -rf $(OBJECTS)
 	rm -rf ./Main
 
 check: all

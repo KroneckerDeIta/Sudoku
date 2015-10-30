@@ -2,7 +2,8 @@
 #define __sudoku_sudokugridpointtest_h__
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-/// \brief Contains tests for SudokuGridPoint.
+/// \brief Declaration of tests for SudokuGridPoint.
+/// \author anon
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include <boost/shared_ptr.hpp>
@@ -34,15 +35,24 @@ class SudokuGridPointTest : public CppUnit::TestFixture
   CPPUNIT_TEST(testExceptionThrownIfValueInPossibleValuesRepeated);
   CPPUNIT_TEST(testExceptionThrownIfPossibleValuesEmpty);
   CPPUNIT_TEST(testGetPossibleValues);
-  CPPUNIT_TEST(testRemoveValueFromPossibleValues);
+  CPPUNIT_TEST(testRemoveValueFromPossibleValuesForSameXY);
+  CPPUNIT_TEST(testRemoveValueFromPossibleValuesFailedDueToXYNotInRowColOrBox);
   CPPUNIT_TEST(testRemoveOneValueFromTwoFromPossibleValues);
   CPPUNIT_TEST(testRemoveValueWhenInitialValueWasGiven);
   CPPUNIT_TEST(testRestorePossibleValue);
+  CPPUNIT_TEST(testRestorePossibleValueFailsIfXDifferentFromOneRecorded);
+  CPPUNIT_TEST(testRestorePossibleValueFailsIfYDifferentFromOneRecorded);
   CPPUNIT_TEST(testRestorePossibleValueThatIsAlreadyInPossibleValues);
   CPPUNIT_TEST(testRestorePossibleValueWhenInitialValueWasGiven);
   CPPUNIT_TEST(testRestorePossibleValueThatWasAddedToGuessedValues);
-  CPPUNIT_TEST(testExceptionThrownIfRestoringValueThatWasNotRemovedBefore);
   CPPUNIT_TEST(testGetValueWhenOneValuePassedToConstructor);
+  CPPUNIT_TEST(testEqualityOfTwoSudokuGridPointObjects);
+  CPPUNIT_TEST(testLessThanOfSudokuGridPointObjects);
+  CPPUNIT_TEST(testNotEqualOperatorSudokuGridPointObjects);
+  CPPUNIT_TEST(testLessThanOrEqualToOperatorSudokuGridPointObjects);
+  CPPUNIT_TEST(testGreaterThanOperatorSudokuGridPointObjects);
+  CPPUNIT_TEST(testGreaterThanOrEqualToOperatorSudokuGridPointObjects);
+  CPPUNIT_TEST(testGetAffectedGridPoints);
   CPPUNIT_TEST_SUITE_END();
   
   //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -94,9 +104,13 @@ class SudokuGridPointTest : public CppUnit::TestFixture
     /// \test Test getting possible values.
     void testGetPossibleValues();
     
-    /// \test Test removing value from possible values.
-    void testRemoveValueFromPossibleValues();
-
+    /// \test Test removing a value from possible values if x and y are the same.
+    void testRemoveValueFromPossibleValuesForSameXY();
+    
+    /// \test Test removing a value fails since the x and y coordinate does not exist in the same
+    /// row or column or sudoku box that the SudokuGridPoints's does.
+    void testRemoveValueFromPossibleValuesFailedDueToXYNotInRowColOrBox();
+    
     /// \test Test removing an element for possible values, when only two values remain. 
     void testRemoveOneValueFromTwoFromPossibleValues();
 
@@ -105,10 +119,16 @@ class SudokuGridPointTest : public CppUnit::TestFixture
 
     /// \test Test restoring a possible value that was removed previously.
     void testRestorePossibleValue();
+    
+    /// \test Test restoring a possible value not possible if x is different to one before.
+    void testRestorePossibleValueFailsIfXDifferentFromOneRecorded();
+    
+    /// \test Test restoring a possible value not possible if y is different to one before.
+    void testRestorePossibleValueFailsIfYDifferentFromOneRecorded();
 
     /// \test Test restoring a possible value that is already in the list of possbile values.
     void testRestorePossibleValueThatIsAlreadyInPossibleValues();
-
+    
     /// \test Test restoring a possible value when an initial value was given.
     void testRestorePossibleValueWhenInitialValueWasGiven();
 
@@ -116,11 +136,29 @@ class SudokuGridPointTest : public CppUnit::TestFixture
     /// possible values to its original state.
     void testRestorePossibleValueThatWasAddedToGuessedValues();
 
-    /// \test Test that exception is thrown if restoring a value that was not previously removed.
-    void testExceptionThrownIfRestoringValueThatWasNotRemovedBefore();
-
     /// \test Test that valid value is returned if one value passed to possible values.
     void testGetValueWhenOneValuePassedToConstructor();
+  
+    /// \test Test equality operator.
+    void testEqualityOfTwoSudokuGridPointObjects();
+
+    /// \test Test less than operator.
+    void testLessThanOfSudokuGridPointObjects();
+
+    /// \test Test not equal to operator.
+    void testNotEqualOperatorSudokuGridPointObjects();
+
+    /// \test Test less than or equal to operator.
+    void testLessThanOrEqualToOperatorSudokuGridPointObjects();
+
+    /// \test Test greater than operator.
+    void testGreaterThanOperatorSudokuGridPointObjects();
+
+    /// \test Test greater than or equal to operator.
+    void testGreaterThanOrEqualToOperatorSudokuGridPointObjects();
+
+    /// \test Test getting all the grid points affected by the current grid point on the board.
+    void testGetAffectedGridPoints();
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   /// Private types and variables.
