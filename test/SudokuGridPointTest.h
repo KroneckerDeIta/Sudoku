@@ -10,7 +10,7 @@
 #include <cppunit/TestCase.h>
 #include <cppunit/extensions/HelperMacros.h>
 
-#include "SudokuGridPoint.h"
+#include "src/SudokuGridPoint.h"
 
 namespace sudoku
 {
@@ -38,6 +38,7 @@ class SudokuGridPointTest : public CppUnit::TestFixture
   CPPUNIT_TEST(testRemoveValueFromPossibleValuesForSameXY);
   CPPUNIT_TEST(testRemoveValueFromPossibleValuesFailedDueToXYNotInRowColOrBox);
   CPPUNIT_TEST(testRemoveOneValueFromTwoFromPossibleValues);
+  CPPUNIT_TEST(testRemoveOneValueFromOneFromPossibleValues);
   CPPUNIT_TEST(testRemoveValueWhenInitialValueWasGiven);
   CPPUNIT_TEST(testRestorePossibleValue);
   CPPUNIT_TEST(testRestorePossibleValueFailsIfXDifferentFromOneRecorded);
@@ -53,6 +54,7 @@ class SudokuGridPointTest : public CppUnit::TestFixture
   CPPUNIT_TEST(testGreaterThanOperatorSudokuGridPointObjects);
   CPPUNIT_TEST(testGreaterThanOrEqualToOperatorSudokuGridPointObjects);
   CPPUNIT_TEST(testGetAffectedGridPoints);
+  CPPUNIT_TEST(testSudokuGridPointsShallowEqualsMethod);
   CPPUNIT_TEST_SUITE_END();
   
   //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -111,8 +113,11 @@ class SudokuGridPointTest : public CppUnit::TestFixture
     /// row or column or sudoku box that the SudokuGridPoints's does.
     void testRemoveValueFromPossibleValuesFailedDueToXYNotInRowColOrBox();
     
-    /// \test Test removing an element for possible values, when only two values remain. 
+    /// \test Test removing an element for possible values, when only one value remains. 
     void testRemoveOneValueFromTwoFromPossibleValues();
+
+    /// \test Test removing the last possible value, should add it as a guess.
+    void testRemoveOneValueFromOneFromPossibleValues();
 
     /// \test Test removing a value when an initial value was given.
     void testRemoveValueWhenInitialValueWasGiven();
@@ -159,6 +164,9 @@ class SudokuGridPointTest : public CppUnit::TestFixture
 
     /// \test Test getting all the grid points affected by the current grid point on the board.
     void testGetAffectedGridPoints();
+
+    /// \test Test the shallow equals method.
+    void testSudokuGridPointsShallowEqualsMethod();
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   /// Private types and variables.

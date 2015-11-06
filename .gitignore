@@ -1,2 +1,6 @@
-Main
 *.o
+*.d
+
+Main
+test/TestMain
+utilities/test/TestMain

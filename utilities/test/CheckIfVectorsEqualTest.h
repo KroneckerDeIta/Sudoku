@@ -1,8 +1,8 @@
-#ifndef __sudoku_sudokuassisttest_h__
-#define __sudoku_sudokuassisttest_h__
+#ifndef __sudoku_checkifvectorsequaltest_h__
+#define __sudoku_checkifvectorsequaltest_h__
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-/// \brief Declaration of tests for SudokuGridPoint.
+/// \brief Declaration of tests for CheckIfVectorsEqual.
 /// \author anon
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -10,46 +10,49 @@
 #include <cppunit/TestCase.h>
 #include <cppunit/extensions/HelperMacros.h>
 
-#include "src/SudokuAssist.h"
-//#include "SudokuGridPoint.h"
+#include "utilities/src/CheckIfVectorsEqual.h"
 
 namespace sudoku
 {
+namespace utilities
+{
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-/// \brief SudokuAssistTest class for testing SudokuAssist.
+/// \brief CheckIfVectorsEqualTest class for testing CheckIfVectorsEqual.
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-class SudokuAssistTest : public CppUnit::TestFixture
+class CheckIfVectorsEqualTest : public CppUnit::TestFixture
 {
-  CPPUNIT_TEST_SUITE(SudokuAssistTest);
+  CPPUNIT_TEST_SUITE(CheckIfVectorsEqualTest);
+  CPPUNIT_TEST(CheckIfEmptyVectorsEqual);
+  CPPUNIT_TEST(CheckEmptyVectorAndNonEmptyVectorNotEqual);
+  CPPUNIT_TEST(CheckNonEmptyVectorEquality);
   CPPUNIT_TEST_SUITE_END();
   
   //////////////////////////////////////////////////////////////////////////////////////////////////
   /// Public methods.
   //////////////////////////////////////////////////////////////////////////////////////////////////
   public:
-    void setUp();
-    //void tearDown();
+      // \test Test if two empty vectors are equal.
+      void CheckIfEmptyVectorsEqual();
+
+      // \test Test that a non empty and empty vector are not equal.
+      void CheckEmptyVectorAndNonEmptyVectorNotEqual();
+
+      // \test Test various non-empty vectors to see if they are equal.
+      void CheckNonEmptyVectorEquality();
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   /// Private types and variables.
   //////////////////////////////////////////////////////////////////////////////////////////////////
   private:
-    /// \brief struct containing variables that will be used to initialise subject.
-    struct TestFields {
-      short sudokuBoard[9][9];
-    };
-    
-    boost::shared_ptr<SudokuAssist> subject_; // subject used for testing.
-    TestFields testFields_; // Will contain variables used for testing.
   
   //////////////////////////////////////////////////////////////////////////////////////////////////
   /// Private methods.
   //////////////////////////////////////////////////////////////////////////////////////////////////
   private:
-    boost::shared_ptr<SudokuAssist> createSubject(); // Method used to create subject.
 };
 
+} // End of namespace utilities.
 } // End of namespace sudoku.
 
 #endif

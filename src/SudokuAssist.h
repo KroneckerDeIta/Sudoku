@@ -7,32 +7,13 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include <algorithm>
+#include <boost/shared_ptr.hpp>
 #include <vector>
 
 #include "SudokuGridPoint.h"
 
 namespace sudoku
 {
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-/// \brief Gets the possbile values that something can be on a Sudoku board.
-/// \param initialBoard The sudoku board populated with values.
-/// \param x The x ordinate of the point you want to find possible values.
-/// \param y The y ordinate of the point you want to find possible values.
-/// \param resultVector The vector of possible values (return).
-/// \return True if board is valid, false otherwise.
-////////////////////////////////////////////////////////////////////////////////////////////////////
-bool getPossibleValues( const short (&initialBoard)[9][9], const short x, const short y, 
-  std::vector<short> &resultVector );
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-/// \brief Populates a sudoku board using an initial board.
-/// \param initialBoard The initial sudoku board populated with values.
-/// \param sudokuBoard Populated with SudokuGridPoint elements (return).
-/// \return True if board is valid, false otherwise.
-////////////////////////////////////////////////////////////////////////////////////////////////////
-//bool populateSudokuBoard( const short (&initialBoard)[9][9], 
-//  SudokuGridPoint (&sudokuBoard)[9][9] );
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 /// \brief SudokuAssist contains methods for helping a user solve a Sudoku board.
@@ -42,16 +23,63 @@ class SudokuAssist
   public:
     ////////////////////////////////////////////////////////////////////////////////////////////////
     /// \brief SudokuAssist constructor.
-    ///
     /// \param sudokuBoard, the initial sudoku board.
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    SudokuAssist(const short (&initialBoard)[9][9])
-    {
+    SudokuAssist(const short (&initialBoard)[9][9]);
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    /// \brief If the sudoku board was valid.
+    /// \return if the sudoku board was valid.  (I.e. it could be solved).
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    bool isValid()
+    {
+      return valid_;
     }
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    /// \brief Gets the solved board.
+    /// \return Vector of pointers to SudokuGridPoints, will be empty if board was not solved (i.e. it
+    /// was not valid.
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    std::vector<SudokuGridPoint> getSolvedBoard()
+    {
+      if ( isValid() )
+      {
+        return sudokuBoard_;
+      }
+      else
+      {
+        // Return an empty vector if not valid.
+        return std::vector<SudokuGridPoint>();
+      }
+    }
+
+  /// Private Methods.
   private:
-    SudokuGridPoint sudokuBoard_[9][9];
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    /// \brief Populates a sudoku board using an initial board.
+    /// \param initialBoard The initial sudoku board populated with values.
+    /// \param sudokuBoard Populated with SudokuGridPoint elements (return).
+    /// \return True if board is valid, false otherwise.
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    void populateSudokuBoard_( const short (&initialBoard)[9][9] );
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    /// \brief Solves the sudoku board.
+    /// \param The current index we are through the sudokuBoard_ vector.
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    void solveBoard_(unsigned int currentIndex);
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    /// \brief Checks the sudoku board's values to make sure they are in the right range.
+    /// \throws invalid_arguement if a value is out of range.
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    void checkBoardValues_( const short (&initialBoard)[9][9] );
+
+  /// Private variables.
+  private:
+    std::vector<SudokuGridPoint> sudokuBoard_; // sudoku board, will be returned.
+    bool valid_;
 };
  
 } // End of namespace sudoku.

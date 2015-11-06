@@ -1,0 +1,86 @@
+#ifndef __sudoku_sudokuboard_h__
+#define __sudoku_sudokuboard_h__
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+/// \brief Declaration of SudokuBoard.
+/// \author anon.
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#include <algorithm>
+#include <boost/shared_ptr.hpp>
+#include <vector>
+
+#include "SudokuGridPoint.h"
+
+namespace sudoku
+{
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+/// \brief SudokuBoard contains methods for manipulating a Sudoku board.
+////////////////////////////////////////////////////////////////////////////////////////////////////
+class SudokuBoard
+{
+  public:
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    /// \brief SudokuBoard constructor.
+    /// \param initialBoard, the initial sudoku board.
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    SudokuBoard(const short (&initialBoard)[9][9]);
+    
+    /*
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    /// \brief Gets the current state of the Sudoku Board.
+    /// \return The Sudoku Board.
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    std::vector<SudokuGridPoint> getSudokuBoard() const
+    {
+      return sudokuBoard_;
+    }
+    */
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    /// \brief Gets the SudokuGridPoint at x and y.
+    /// \return The SudokuGridPoint at x and y.
+    /// \throws invalid_argument if x and y outside valid range.
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    SudokuGridPoint getSudokuGridPoint(short x, short y) const
+    {
+      // Let this do the work of checking the bounds of x and y.
+      SudokuGridPoint check(x, y, 1); 
+
+      // If x and y are ok then we can continue.
+      for ( auto &sgp : sudokuBoard_ )
+      {
+        if ( x == sgp.getX() && y == sgp.getY() )
+        {
+          return sgp;
+        }
+      }
+
+      // If we haven't found the SudokuGridPoint that is a logic error.
+      throw std::logic_error("Couldn't find SudokuGridPoint with valid x and y passed.");
+    }
+
+  /// Private Methods.
+  private:
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    /// \brief Checks the values in the initial board are ok.
+    /// \param initialBoard The initial sudoku board.
+    /// \throws invalid_argument If any of the values are outside the range 0 to 9.
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    void checkBoardValues_( const short (&initialBoard)[9][9] ) const;
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    /// \brief Populates our Sudoku Board (vector of SudokuGridPoint).
+    /// \param initialBoard The initial sudoku board.
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    void populateSudokuBoard_( const short (&initialBoard)[9][9] );  
+
+  /// Private variables.
+  private:
+    std::vector<SudokuGridPoint> sudokuBoard_; // sudoku board, will be returned.
+};
+ 
+} // End of namespace sudoku.
+
+#endif

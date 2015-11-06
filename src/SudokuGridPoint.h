@@ -10,6 +10,8 @@
 #include <iostream>
 #include <stdexcept>
 
+#include "utilities/src/CheckIfVectorsEqual.h"
+
 namespace sudoku
 {
 
@@ -70,17 +72,10 @@ class SudokuGridPoint
       // initialValue_ to be 1 for the time being, change afterwards.
       checkVectorOfPossibleValues(possibleValues);     
  
-      if ( possibleValues.size() == 1 )
-      {
-        guessValue_ = possibleValues.at(0);
-      }
-      else
-      {
-        std::copy(possibleValues.begin(), possibleValues.end(),
-          std::back_inserter(possibleValues_));
-        guessValue_ = 0;
-      }
-
+      std::copy(possibleValues.begin(), possibleValues.end(),
+        std::back_inserter(possibleValues_));
+      
+      guessValue_ = 0;
       initialValue_ = 0;
     }
     
@@ -88,7 +83,7 @@ class SudokuGridPoint
     /// \brief gets the x ordinate.
     /// \return the x ordinate.
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    short getX()
+    short getX() const
     {
       return x_;
     }
@@ -97,7 +92,7 @@ class SudokuGridPoint
     /// \brief gets the y ordinate.
     /// \return the y ordinate.
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    short getY()
+    short getY() const
     {
       return y_;
     }
@@ -106,7 +101,7 @@ class SudokuGridPoint
     /// \brief gets the value.
     /// \return the value.
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    short getValue()
+    short getValue() const
     {
       if ( initialValue_ != 0 )
       {
@@ -124,7 +119,7 @@ class SudokuGridPoint
     /// \brief get the possible values.
     /// \return the possible values.
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    std::vector<short> getPossibleValues()
+    std::vector<short> getPossibleValues() const
     {
       return possibleValues_;
     }
@@ -141,7 +136,7 @@ class SudokuGridPoint
     bool removePossibleValue(const short x, const short y, const short value)
     {
       bool result(false);
- 
+
       // Checks if in the same column or row.  Then checks if they are in the same sudoku box.
       // x - (x % 3) is a way of getting to the nearest multiple of 3 less than or equal to x.
       if ( x_ == x || y_ == y ||
@@ -163,13 +158,12 @@ class SudokuGridPoint
 
           result = true;
         }
-  
-        if ( possibleValues_.size() == 1 )
-        {
-          // If we have one value left in the possible values this must be our guess.
-          guessValue_ = possibleValues_.back();
-          possibleValues_.pop_back();
-        }
+      }
+    
+      if ( possibleValues_.size() == 0 )
+      {
+        // If we have no values left in the possible values this must be our guess.
+	guessValue_ = value;
       }
 
       return result;
@@ -202,17 +196,12 @@ class SudokuGridPoint
         // If we have then we can restore it.
         if ( itPos != removedValues_.end() )
         {
-          // We cannot have removed a value that was assigned to guessValue_ (hopefully), so add it
-          // back if it is none zero.
-          if ( guessValue_ != 0 )
-          {
-            possibleValues_.push_back(guessValue_);
-            guessValue_ = 0;
-          }
+          // We have restored a possible value, make sure the guess is back to being 0.
+          guessValue_ = 0;
           // Now to add the value to possible values.
           possibleValues_.push_back(value);
 
-          // Since it was in the vector of removed values we have better remove it.
+          // Since it was in the vector of removed values we had better remove it.
           removedValues_.erase(itPos, removedValues_.end());
           
           result = true;
@@ -220,7 +209,7 @@ class SudokuGridPoint
       }
       return result;
     }
-    
+
     ////////////////////////////////////////////////////////////////////////////////////////////////
     /// \brief Equality operator.
     /// \param rhs The right hand side object.
@@ -323,7 +312,7 @@ class SudokuGridPoint
     /// method we return a vector of pairs of these other grid points.
     /// \return See decription.
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    std::vector<std::pair<short, short> > getAffectedGridPoints()
+    std::vector<std::pair<short, short> > getAffectedGridPoints() const
     {
       std::vector<std::pair<short, short> > affectedGridPoints;
       
@@ -365,6 +354,25 @@ class SudokuGridPoint
       return affectedGridPoints;
     }
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    /// \brief The shallowEquals method.  Shallow since we only compare x, y, the value and 
+    /// the vector of possible values (i.e. things that are available publically).
+    /// \param rhs The other object we are comapring to.
+    /// \return true is equal (shallowy) false otherwise.
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    bool shallowEquals(const SudokuGridPoint& rhs) const
+    {
+      bool result(false);
+      if ( this->getX() == rhs.getX() &&
+           this->getY() == rhs.getY() &&
+           this->getValue() == rhs.getValue() &&
+           utilities::checkIfVectorsEqual(this->getPossibleValues(), rhs.getPossibleValues()))
+      {
+        result = true;
+      }
+      return result;
+    }
+
   // Private methods.
   private:
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -372,7 +380,7 @@ class SudokuGridPoint
     /// \param x x ordinate.
     /// \param y y ordinate.
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    void checkXYInBounds(const short x, const short y)
+    void checkXYInBounds(const short x, const short y) const
     {
       // Check x ordinate in correct bounds.
       if ( x < 0 )
@@ -400,7 +408,7 @@ class SudokuGridPoint
     /// possible value.
     /// \param possibleValues vector of possible values.
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    void checkVectorOfPossibleValues(std::vector<short> possibleValues)
+    void checkVectorOfPossibleValues(std::vector<short> possibleValues) const
     {
       if ( possibleValues.empty() )
       {
