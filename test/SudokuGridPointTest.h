@@ -55,6 +55,7 @@ class SudokuGridPointTest : public CppUnit::TestFixture
   CPPUNIT_TEST(testGreaterThanOrEqualToOperatorSudokuGridPointObjects);
   CPPUNIT_TEST(testGetAffectedGridPoints);
   CPPUNIT_TEST(testSudokuGridPointsShallowEqualsMethod);
+  CPPUNIT_TEST(testRemoveFromOnePossibleValueButNotSameGridPoint);
   CPPUNIT_TEST_SUITE_END();
   
   //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -167,6 +168,10 @@ class SudokuGridPointTest : public CppUnit::TestFixture
 
     /// \test Test the shallow equals method.
     void testSudokuGridPointsShallowEqualsMethod();
+
+    /// \test Test that trying to remove the last possible values when the coordinates are not the
+    /// same returns a value of 3.
+    void testRemoveFromOnePossibleValueButNotSameGridPoint();
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   /// Private types and variables.

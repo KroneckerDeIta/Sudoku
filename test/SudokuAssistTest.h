@@ -37,7 +37,6 @@ class SudokuAssistTest : public CppUnit::TestFixture
   private:
     /// \brief struct containing variables that will be used to initialise subject.
     struct TestFields {
-      short sudokuBoard[9][9];
     };
     
     boost::shared_ptr<SudokuAssist> subject_; // subject used for testing.

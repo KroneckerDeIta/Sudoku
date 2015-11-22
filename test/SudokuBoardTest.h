@@ -25,6 +25,15 @@ class SudokuBoardTest : public CppUnit::TestFixture
   CPPUNIT_TEST(testExceptionThrownIfValueLessThanZero);
   CPPUNIT_TEST(testExceptionThrownIfValueGreaterThanNine);
   CPPUNIT_TEST(testSudokuBoardPopulatedCorrectly);
+  CPPUNIT_TEST(testValidBoardReturnsTrue);
+  CPPUNIT_TEST(testInvalidBoardReturnsFalseForSameNumberInRow);
+  CPPUNIT_TEST(testInvalidBoardReturnsFalseForSameNumberInColumn);
+  CPPUNIT_TEST(testInvalidBoardReturnsFalseForSameNumberInSquare);
+  CPPUNIT_TEST(testBoardNotSolvableIfInvalid);
+  CPPUNIT_TEST(testSolvingGoodBoard);
+  CPPUNIT_TEST(testSolvingZeroesBoard);
+  CPPUNIT_TEST(testBoardValidButNotSolvable);
+  CPPUNIT_TEST(testBoardOrdered);
   CPPUNIT_TEST_SUITE_END();
   
   //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -42,6 +51,33 @@ class SudokuBoardTest : public CppUnit::TestFixture
 
     // \test Test that the initial board is populated correctly.
     void testSudokuBoardPopulatedCorrectly();
+
+    // \test Test checking a valid board.
+    void testValidBoardReturnsTrue();
+
+    // \test Test checking a none valid board (that has a repeated number in a row).
+    void testInvalidBoardReturnsFalseForSameNumberInRow();
+    
+    // \test Test checking a none valid board (that has a repeated number in a column).
+    void testInvalidBoardReturnsFalseForSameNumberInColumn();
+    
+    // \test Test checking a none valid board (that has a repeated number in a square).
+    void testInvalidBoardReturnsFalseForSameNumberInSquare();
+
+    // \test Test the board is not solvable if it is not valid.
+    void testBoardNotSolvableIfInvalid();
+
+    // \test Test solving a good board.
+    void testSolvingGoodBoard();
+    
+    // \test Test solving a board with no initial values.
+    void testSolvingZeroesBoard();
+
+    // \test Test solving a board that is valid but not solvable.
+    void testBoardValidButNotSolvable();
+
+    // \test Test that the Sudoku Board is ordered.
+    void testBoardOrdered();
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   /// Private types and variables.
