@@ -3,7 +3,7 @@
 #include <vector>
 
 // The Al Escargot.
-const short testBoard5[9][9] = 
+const short alEscargot[9][9] = 
 {
 {1, 0, 0, 0, 0, 7, 0, 9, 0},
 {0, 3, 0, 0, 2, 0, 0, 0, 8},
@@ -18,7 +18,7 @@ const short testBoard5[9][9] =
 
 int main(void)
 {
-  sudoku::SudokuBoard sb(testBoard8);
+  sudoku::SudokuBoard sb(alEscargot);
 
   sb.solveBoard();
 
