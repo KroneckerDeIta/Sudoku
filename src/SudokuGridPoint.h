@@ -124,30 +124,36 @@ class SudokuGridPoint
       return possibleValues_;
     }
     
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    /// \brief Remove a value from the possible values.  It is not guaranteed that the value will be
-    /// removed from the possible values.  It will only be removed if it exists in the same column,
-    /// row or sudoku 'box' that the given x and y exist in. However, if there is only one possible
-    /// value left then the x and y passed to this method must be the same as the x and y in this
-    /// object, otherwise the value will not be removed and a value indicating this will be
-    /// returned.
-    /// \param x The x ordinate of the value.
-    /// \param y The y ordinate of the value.
-    /// \param value The value to be removed from possible values.
-    /// \return 0 if value removed and it was the last possible value, 1 if value removed, 2 if 
-    /// value not removed, and 3 if removing the last value, but the grid point coordinate does not
-    /// match the coordinates passed to this method.
-    ////////////////////////////////////////////////////////////////////////////////////////////////
+    //
+    // \brief Remove a value from the possible values.  It is not guaranteed that the value will be
+    // removed from the possible values.  It will only be removed if it exists in the same column,
+    // row or sudoku 'box' that the given x and y exist in. However, if there is only one possible
+    // value left then the x and y passed to this method must be the same as the x and y in this
+    // object, otherwise the value will not be removed and a value indicating this will be
+    // returned.
+    // \param x The x ordinate of the value.
+    // \param y The y ordinate of the value.
+    // \param value The value to be removed from possible values.
+    // \return 0 if value removed and it was the last possible value, 1 if value removed, 2 if 
+    // value not removed, and 3 if removing the last value, but the grid point coordinate does not
+    // match the coordinates passed to this method.
+    //
     short removePossibleValue(const short x, const short y, const short value)
     {
       short result(2);
 
+      //
       // Checks if in the same column or row.  Then checks if they are in the same sudoku box.
       // x - (x % 3) is a way of getting to the nearest multiple of 3 less than or equal to x.
-      if ( x_ == x || y_ == y ||
-        ( ( x_ - (x_ % 3) ) == ( x - ( x % 3 ) ) && ( y_ - (y_ % 3) ) == ( y - ( y % 3 ) ) ) )
+      //
+      if (   x_ == x
+          || y_ == y
+          || ((x_ - (x_ % 3)) == (x - (x % 3))
+          && (y_ - (y_ % 3)) == (y - (y % 3))) )
       {      
+        //
         // Now check if the value is actually in the possibleValues.
+        //
         std::vector<short>::iterator itPos(std::remove(possibleValues_.begin(),
           possibleValues_.end(), value));
         
@@ -161,12 +167,16 @@ class SudokuGridPoint
             result = 3;
           }
           
+          //
           // If there is no problem removing it do so.
+          //
           if ( result != 3 )
           {
             possibleValues_.erase(itPos, possibleValues_.end());
           
+            // 
             // Now add to the removed values.
+            // 
             removedValues_.push_back(RemovedValueInfo_());
             removedValues_.back().removedX = x;
             removedValues_.back().removedY = y;
@@ -179,7 +189,9 @@ class SudokuGridPoint
     
       if ( result == 1 && possibleValues_.size() == 0 )
       {
+        // 
         // If we have no values left in the possible values this must be our guess.
+        // 
 	guessValue_ = value;
         result = 0;
       }
@@ -187,14 +199,14 @@ class SudokuGridPoint
       return result;
     }
     
-    ////////////////////////////////////////////////////////////////////////////////////////////////
+    ///
     /// \brief restores a possible values.  Restoration will only take place if the passed ordinates
     /// and value correspond to something that was removed previously.
     /// \param x The x ordinate of the value.
     /// \param y The y ordinate of the value.
     /// \param value The value to be removed from possible values.
     /// \return true if value was restored, false otherwise.
-    ////////////////////////////////////////////////////////////////////////////////////////////////
+    ///
     bool restorePossibleValue(const short x, const short y, const short value)
     {
       bool result(false);
